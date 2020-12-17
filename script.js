@@ -191,19 +191,39 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 }
 
-let currentAccount;
+
+
+let currentAccount, timer;
+
+const startLogOuTimer = function () {
+  const tick = function () {
+    const min = `${Math.trunc(time / 100)}`.padStart(2, 0);
+    const sec = String(time % 100).padStart(2, 0);
+    labelTimer.textContent = `${min}:${sec}`;
+
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = `Log in to get started`
+      containerApp.style.opacity = 0;
+    }
+    time--
+  }
+  let time = 30;
+  tick()
+  timer = setInterval(tick, 1000)
+  return timer;
+};
 
 // currentAccount = account1;
 // updateUI(currentAccount);
 // containerApp.style.opacity = 100;
-
 
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
   currentAccount = accounts.find(acc => acc.userName === inputLoginUsername.value);
 
   if (currentAccount?.pin === Number(inputLoginPin.value)) {
-    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}`;
+    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]} `;
     containerApp.style.opacity = 100;
     inputLoginUsername.value = inputLoginPin.value = "";
     inputLoginPin.blur();
@@ -217,17 +237,20 @@ btnLogin.addEventListener('click', function (e) {
       year: 'numeric',
       // weekday: 'narrow'
     }
-    // const day = `${now.getDate()}`.padStart(2, 0);
-    // const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    // const day = `${ now.getDate() } `.padStart(2, 0);
+    // const month = `${ now.getMonth() + 1 } `.padStart(2, 0);
     // const year = now.getFullYear();
-    // const hour = `${now.getHours()}`.padStart(2, 0);
-    // const min = `${now.getMinutes()}`.padStart(2, 0);
+    // const hour = `${ now.getHours() } `.padStart(2, 0);
+    // const min = `${ now.getMinutes() } `.padStart(2, 0);
 
     // const locale = navigator.language;
 
     labelDate.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(now);
+    // =`${ day } /${month}/${ year }, ${ hour }: ${ min } `;
 
-    // =`${day}/${month}/${year}, ${hour}:${min}`;
+    clearInterval(timer);
+    startLogOuTimer();
+
     updateUI(currentAccount);
   }
 });
@@ -241,10 +264,12 @@ btnTransfer.addEventListener('click', function (e) {
   if (amount > 0 && receiverAcc && currentAccount.balance >= amount && receiverAcc?.userName !== currentAccount.userName) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
-    console.log(currentAccount);
+    // console.log(currentAccount);
     currentAccount.movementsDates.push(new Date().toISOString());
     receiverAcc.movementsDates.push(new Date().toISOString());
     updateUI(currentAccount);
+    clearInterval(timer);
+    startLogOuTimer();
   };
 });
 
@@ -257,6 +282,8 @@ btnLoan.addEventListener('click', function (e) {
       currentAccount.movements.push(amount);
       currentAccount.movementsDates.push(new Date().toISOString());
       updateUI(currentAccount);
+      clearInterval(timer);
+      startLogOuTimer();
     }, 2500);
   }
   inputLoanAmount.value = '';
