@@ -191,8 +191,6 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 }
 
-
-
 let currentAccount, timer;
 
 const startLogOuTimer = function () {
